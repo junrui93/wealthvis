@@ -31,22 +31,11 @@ var options = {
 var timeline = new vis.Timeline(container, items, options);
 
 function selectImageById(sid) {
-  $('#content .item').hide();
-  console.log('#content .item[data-sid="{0}"]'.format(sid));
-  $('#content .item[data-sid="{0}"]'.format(sid)).show();
+  $('#content .item').fadeOut();
+  $('#content .item[data-sid="{0}"]'.format(sid)).fadeIn();
 }
 
-timeline.on('select', function(properties) {
-  if (properties.items.length > 0) {
-    timeline.focus(properties.items[0]);
-    selectImageById(properties.items[0]);
-  } else {
-    timeline.fit();
-    selectImageById(0);
-  }
-});
-
-$('#btnPrev').click(function() {
+function tlBackward() {
   var sid = timeline.getSelection();
   if (sid.length === 0) {
     sid = items.length;
@@ -63,9 +52,9 @@ $('#btnPrev').click(function() {
     timeline.focus(sid);
     selectImageById(sid);
   }
-});
+}
 
-$('#btnNext').click(function() {
+function tlForward() {
   var sid = timeline.getSelection();
   if (sid.length === 0) {
     sid = 1;
@@ -82,4 +71,35 @@ $('#btnNext').click(function() {
     timeline.focus(sid);
     selectImageById(sid);
   }
+}
+
+var autoPlayHandle = setInterval(tlForward, 3000);
+function toggleAutoPlay() {
+  if (autoPlayHandle) {
+    clearInterval(autoPlayHandle);
+    autoPlayHandle = null;
+  } else {
+    autoPlayHandle = setInterval(tlForward, 3000);
+  }
+}
+
+timeline.on('select', function(properties) {
+  if (properties.items.length > 0) {
+    timeline.focus(properties.items[0]);
+    selectImageById(properties.items[0]);
+  } else {
+    timeline.fit();
+    selectImageById(0);
+  }
+});
+
+$('#btnPrev').click(tlBackward);
+$('#btnNext').click(tlForward);
+$('#btnToggleAutoPlay').click(function() {
+  if ($(this).toggleClass('playing').hasClass('playing')) {
+    $(this).text('Stop auto play');
+  } else {
+    $(this).text('Auto play');
+  }
+  toggleAutoPlay();
 });
